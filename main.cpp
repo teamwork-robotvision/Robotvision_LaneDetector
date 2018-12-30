@@ -3,27 +3,25 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include "LaneDetector.h"
-//#include "LaneDetector.cpp"
-
-/**
-*@brief Function main that runs the main algorithm of the lane detection.
-*@brief It will read a video of a car in the highway and it will output the
-*@brief same video but with the plotted detected lane
-*@param argv[] is a string to the full path of the demo video
-*@return flag_plot tells if the demo has sucessfully finished
-*/
+#include "RoadSign.h"
+//#include "lanedetector.h"
 int main() {
 
-    // The input argument is the location of the video
-    cv::VideoCapture cap("/home/jasmine/机器视觉/finalproject/finalproject/original.mp4");
+    std::string general_path="/home/jasmine/机器视觉/finalproject/finalproject/";
+    std::string videoPath=general_path+"test_video/second02.mp4";          //设置本地视频路径
+    cv::VideoCapture cap(videoPath);            //读入视频
     if (!cap.isOpened())
         return -1;
 
-    LaneDetector lanedetector;  // Create the class object
+    LaneDetector lanedetector;          // 创建车道检测类
+    RoadSign roadsign;
     cv::Mat frame;
+    cv::Mat selected_img;
     cv::Mat img_denoise;
     cv::Mat img_edges;
     cv::Mat img_mask;
+    cv::Mat img_wrape;
+    cv::Mat M;
     cv::Mat img_lines;
     std::vector<cv::Vec4i> lines;
     std::vector<std::vector<cv::Vec4i> > left_right_lines;
@@ -32,37 +30,56 @@ int main() {
     int flag_plot = -1;
     int i = 0;
 
-    // Main algorithm starts. Iterate through every frame of the video
-    while (i < 3500) {
-        // Capture frame
+    //读取视频帧数
+    double rate = cap.get(CV_CAP_PROP_FPS);
+    // 获取视频帧的尺寸
+    int width = cap.get(CV_CAP_PROP_FRAME_WIDTH);
+    int height = cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+    //根据打开视频的参数初始化输出视频格式
+    cv::VideoWriter lane_detor(general_path+"detect_out/lane_detected_orignal.mp4", CV_FOURCC('m', 'p', '4', 'v'), rate, cv::Size(width, height));
+    // 对每一帧的视频进行处理
+    while (i < 5500) {
+
+        //读取视频
         if (!cap.read(frame))
             break;
 
-        // Denoise the image using a Gaussian filter
-        img_denoise = lanedetector.deNoise(frame);
+        //选取颜色区域
+        selected_img=lanedetector.selectColor(frame);
+        roadsign.select_color(frame);
 
-        // Detect edges in the image
+        // 高斯滤波
+        img_denoise = lanedetector.deNoise(selected_img);
+
+        // 边缘检测
         img_edges = lanedetector.edgeDetector(img_denoise);
 
-        // Mask the image so that we only get the ROI
+        // 获得ROI(感兴趣区域）＋　滤波
         img_mask = lanedetector.mask(img_edges);
+        img_mask=lanedetector.deNoise(img_mask);
 
-        // Obtain Hough lines in the cropped image
+//        //变换鸟瞰图
+//        M=lanedetector.get_M();
+//        img_wrape=lanedetector.perspective_trans(img_mask,M);
+//        lanedetector.find_line(img_wrape);
+
+        // 在处理后的图像中获得霍夫线
         lines = lanedetector.houghLines(img_mask);
 
         if (!lines.empty())
         {
-            // Separate lines into left and right lines
+            // 检测车道是转向
             left_right_lines = lanedetector.lineSeparation(lines, img_edges);
 
-            // Apply regression to obtain only one line for each side of the lane
+            // 应用回归在车道的每一侧获得唯一的线
             lane = lanedetector.regression(left_right_lines, frame);
 
-            // Predict the turn by determining the vanishing point of the the lines
+            // 通过确定线的消失点来预测转弯
             turn = lanedetector.predictTurn();
 
-            // Plot lane detection
+            // 在视频中显示方向
             flag_plot = lanedetector.plotLane(frame, lane, turn);
+            lane_detor.write(frame);
 
             i += 1;
             cv::waitKey(25);

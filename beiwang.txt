@@ -1,0 +1,5 @@
+first 车道明显　路牌３个
+second 车道明显　路牌多　有变道　有转弯
+third 不考虑
+forth 和second差不多
+
