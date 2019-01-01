@@ -20,12 +20,9 @@ SOURCES += \
     lane_process.cpp \
     advance_lane_detect.cpp \
     roadsign.cpp
-INCLUDEPATH +=  /usr/local/include \
+INCLUDEPATH += /usr/local/include \
                 /usr/local/include/opencv \
-                /usr/local/include/opencv2 \
-                /usr/local/include/opencv/include \
-                /usr/local/include/opencv/include/opencv \
-                /usr/local/include/opencv/include/opencv2
+                /usr/local/include/opencv2
 
 LIBS +=/usr/local/lib/libopencv_highgui.so \
         /usr/local/lib/libopencv_core.so    \
@@ -35,9 +32,8 @@ LIBS +=/usr/local/lib/libopencv_highgui.so \
         /usr/local/lib/libopencv_calib3d.so \
         /usr/local/lib/libopencv_features2d.so \
         /usr/local/lib/libopencv_flann.so  \
-        /usr/local/lib/libopencv_objdetect.so \
-        /usr/local/lib/libopencv_imgcodecs.so \
-        /usr/local/lib/opencv/lib/*.so
+        /usr/local/lib/libopencv_objdetect.so\
+        /usr/local/lib/libopencv_imgcodecs.so\
 
 
 # Default rules for deployment.

@@ -2,13 +2,13 @@
 #include <string>
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "LaneDetector.h"
+//#include "LaneDetector.h"
 #include "RoadSign.h"
-//#include "lanedetector.h"
+#include "lanedetector.h"
 int main() {
 
     std::string general_path="/home/jasmine/机器视觉/finalproject/finalproject/";
-    std::string videoPath=general_path+"test_video/second02.mp4";          //设置本地视频路径
+    std::string videoPath=general_path+"test_video/original.mp4";          //设置本地视频路径
     cv::VideoCapture cap(videoPath);            //读入视频
     if (!cap.isOpened())
         return -1;
@@ -57,12 +57,13 @@ int main() {
         // 获得ROI(感兴趣区域）＋　滤波
         img_mask = lanedetector.mask(img_edges);
         img_mask=lanedetector.deNoise(img_mask);
+        cv::Mat temp=img_mask.clone();
 
-//        //变换鸟瞰图
-//        M=lanedetector.get_M();
-//        img_wrape=lanedetector.perspective_trans(img_mask,M);
-//        lanedetector.find_line(img_wrape);
-
+        //变换鸟瞰图
+        M=lanedetector.get_M();
+        img_wrape=lanedetector.perspective_trans(temp,M);
+        lanedetector.find_line(img_wrape);
+/*---------------------------------------------------------------------------------------*/
         // 在处理后的图像中获得霍夫线
         lines = lanedetector.houghLines(img_mask);
 
